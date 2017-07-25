@@ -1,12 +1,15 @@
 package com.example.administrator.servernodejs;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.widget.Button;
 
 import com.example.administrator.servernodejs.domain.Bbs;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,19 +17,16 @@ import java.util.List;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
+import okhttp3.ResponseBody;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
-import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.DELETE;
-import retrofit2.http.GET;
-import retrofit2.http.POST;
-import retrofit2.http.PUT;
 
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recycler;
     List<Bbs> data;
     RecyclerAdapter adapter;
+    private Button write;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
         adapter = new RecyclerAdapter(data, this);
         recycler.setAdapter(adapter);
         recycler.setLayoutManager(new LinearLayoutManager(this));
+        loader();
     }
 
     private void lambdaTest() {
@@ -46,13 +47,30 @@ public class MainActivity extends AppCompatActivity {
 
     private void initView() {
         recycler = (RecyclerView) findViewById(R.id.recycler);
+        write = (Button) findViewById(R.id.write);
+        write.setOnClickListener(v->{
+            Intent intent = new Intent(MainActivity.this, WriteActivity.class);
+            startActivityForResult(intent, 999);
+        });
     }
 
-    private void loader(){
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(resultCode == RESULT_OK){
+            if(requestCode == 999){
+                this.data.clear();
+                loader();
+            }
+        }
+    }
+
+    private void loader() {
+        // 0. 퍼미션
+
         // 1. 레트로핏 생성
         Retrofit client = new Retrofit.Builder()
                 .baseUrl(IBbs.SERVER)
-                .addConverterFactory(GsonConverterFactory.create())
+//                .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build();
 
@@ -60,39 +78,39 @@ public class MainActivity extends AppCompatActivity {
         IBbs myBbs = client.create(IBbs.class);
 
         // 3. 서비스의 특정 함수 호출
-        Observable<List<Bbs>> observable = myBbs.read();
+        Observable<ResponseBody> observable = myBbs.read();
 
         // 4. subscribe 등록
         observable
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        //  데이터를 꺼내고
+                        responseBody -> {
+                            //  데이터를 꺼내고
+                            String jsonString = responseBody.string();
+                            Log.e("Retrofit", jsonString);  // 한 번 쓰면 다시 못 쓰게 닫히게 되어 있다. 그리고 습관이 잘못 되어 있는게, 로그를 아래쪽에 찍고 재사용 했어야지 갖다 쓰면 어떡하냐.
+                            //Gson gson = new Gson();
+//                            Type type = new TypeToken<List<Bbs>>(){}.getType(); // 컨버팅 하기 위한 타입 지정
+//                            Bbs datas[] = gson.fromJson(jsonString, type);
+                            //Bbs[] datas = gson.fromJson(jsonString, Bbs[].class); // GsonConverter 해주면 responsebody 안 하고 자동으로 다 해서 넘겨준다. 즉 이 1-2줄 정도를 gsonconverter 가 해 주는 것임
+                            // 그리고 원래는 bbs list 를 가진 클래스를 만들어야 하지만 이렇게 할 수 있다는 것을 알 수 있다
+                            Bbs[] datas = new Gson().fromJson(jsonString, Bbs[].class);
 
-                        // 어댑터를 세팅하고
-
-                        // 어댑터 갱신
+                            if (datas == null) {
+                                Log.e("NADAN", "null 입니다.");
+                            } else {
+                                Log.e("NADAN", datas.length + "");
+                            }
+                            // 어댑터를 세팅하고
+                            for (Bbs bbs : datas) {
+                                this.data.add(bbs);
+                            }
+                            // 어댑터 갱신
+                            adapter.notifyDataSetChanged();
+                        }
                 );
     }
-
-    interface IBbs {
-        String SERVER = "http://192.168.10.85/";
-
-        @GET("bbs")
-        Observable<List<Bbs>> read();
-
-        @POST
-        void write(Bbs bbs);
-
-        @PUT
-        void update(Bbs bbs);
-
-        @DELETE
-        void delete(Bbs bbs);
-    }
-
     interface IUser {
 
     }
-
 }

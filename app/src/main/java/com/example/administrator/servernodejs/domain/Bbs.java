@@ -12,5 +12,12 @@ public class Bbs {
     public String author;
     public String date;
 
+    public Bbs() {
+    }
 
+    public Bbs(String title, String content, String author) {
+        this.title = title;
+        this.content = content;
+        this.author = author;
+    }
 }

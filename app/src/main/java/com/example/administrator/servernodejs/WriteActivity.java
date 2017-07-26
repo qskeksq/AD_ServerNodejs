@@ -1,6 +1,5 @@
 package com.example.administrator.servernodejs;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -73,11 +72,15 @@ public class WriteActivity extends AppCompatActivity {
                 .subscribe(
                         responseBody -> {
                             String reuslt = responseBody.string();
-                            Intent intent = new Intent(WriteActivity.this, MainActivity.class);
-                            setResult(RESULT_OK, intent);
-                            finish();
+//                            Intent intent = getIntent();
+                            // 여기서 인텐트를 담아서 setResult 를 하면 onActivityResult 에서 Intent data 에서 꺼내 쓰기 위해 해 주는 것인데
+                            // 만약 전달할 것이 없다면 그냥 result code 만 전달해 주면 되는 것이다.
+//                            setResult(RESULT_OK, intent);
+                            setResult(RESULT_OK);
+                            finish();   // finish 는 생명주기 onDestroy 처리를 해 준다
+                            // ***** 참고로 setResult 할 때 onActivityResult 가 호출되는 게 아니라 finish 가 되어야 onActivityResult 가 호출된다.*****
+                            // setResult 는 intent 에 값만 넣어두는 것임.
                         }
                 );
     }
-
 }

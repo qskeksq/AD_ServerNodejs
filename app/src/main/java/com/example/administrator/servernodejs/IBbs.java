@@ -34,5 +34,4 @@ public interface IBbs {
 
     @DELETE
     Observable<ResponseBody> delete(Bbs bbs);
-
 }

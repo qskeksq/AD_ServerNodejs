@@ -23,6 +23,8 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
+    // php, spring(톰캣), dotnet 형태의 서버를 개발해 보아야 한다.
+
     private RecyclerView recycler;
     List<Bbs> data;
     RecyclerAdapter adapter;
@@ -48,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private void initView() {
         recycler = (RecyclerView) findViewById(R.id.recycler);
         write = (Button) findViewById(R.id.write);
-        write.setOnClickListener(v->{
+        write.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, WriteActivity.class);
             startActivityForResult(intent, 999);
         });
@@ -56,11 +58,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(resultCode == RESULT_OK){
-            if(requestCode == 999){
-                this.data.clear();
-                loader();
-            }
+        if (resultCode == RESULT_OK) {
+            // 이런식으로 좀 생각을 하면서 하자. 하나밖에 없으니까 RESULT_OK 만 확인하면 된다.
+            this.data.clear();  // 중복되는 데이터가 있다면 갱신하지 않는 방법으로 생각해본다.
+            loader();
         }
     }
 
@@ -110,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                 );
     }
+
     interface IUser {
 
     }

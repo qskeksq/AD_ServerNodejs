@@ -33,7 +33,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // 처음에는 savedInstanceState 가 null 이고 그 다음부터는 null 이 아닌 bundle 이 넘어온다
         setContentView(R.layout.activity_main);
+//        야메이긴 한데 이렇게 해 주면 된다.
+//        if(savedInstanceState != null)
+//            return;
+//        이렇게 야메로 하지 않으려면 onSavedInstanceState 와 restoreSavedInstanceState 로 해 주면 된다.
         lambdaTest();
         initView();
         data = new ArrayList<>();
